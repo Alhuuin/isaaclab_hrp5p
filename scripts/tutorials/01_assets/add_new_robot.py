@@ -6,7 +6,7 @@
 import argparse
 
 from isaaclab.app import AppLauncher
-
+import math
 # add argparse arguments
 parser = argparse.ArgumentParser(
     description="This script demonstrates adding a custom robot to an Isaac Lab environment."
@@ -81,7 +81,225 @@ DOFBOT_CONFIG = ArticulationCfg(
     },
 )
 
+HRP5P_CFG = ArticulationCfg(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=f"/home/hippolyte/HRP5Pmain/HRP5Pmain.usd",
+        activate_contact_sensors=True,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=False,
+            solver_position_iteration_count=4,
+            solver_velocity_iteration_count=4,
+        ),
+    ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        pos=(2.0, 2.0, 1.05),
+        joint_pos={
+            "RCY": 0.0,
+            "RCR": 0.0,
+            "RCP": math.radians(-26.87),
+            "RKP": math.radians(50.0),
+            "RAP": math.radians(-23.13),
+            "RAR": 0.0,
+            "LCY": 0.0,
+            "LCR": 0.0,
+            "LCP": math.radians(-26.87),
+            "LKP": math.radians(50.0),
+            "LAP": math.radians(-23.13),
+            "LAR": 0.0,
+            "WP": 0.0,
+            "WR": 0.0,
+            "WY": 0.0,
+            "HP": 0.0,
+            "HY": 0.0,
+            "RSC": 0.0,
+            "RSP": math.radians(60.0),
+            "RSR": math.radians(-20.0),
+            "RSY": math.radians(-5.0),
+            "REP": math.radians(-105.0),
+            "RWRY": 0.0,
+            "RWRR": math.radians(-40.0),
+            "RWRP": 0.0,
+            "RHDY": 0.0,
+            "LSC": 0.0,
+            "LSP": math.radians(60.0),
+            "LSR": math.radians(20.0),
+            "LSY": math.radians(5.0),
+            "LEP": math.radians(-105.0),
+            "LWRY": 0.0,
+            "LWRR": math.radians(40.0),
+            "LWRP": 0.0,
+            "LHDY": 0.0,
+            "LTMP": math.radians(-60.5),
+            "LTPIP": 0.0,
+            "LTDIP": 0.0,
+            "LMMP": math.radians(60.5),
+            "LMPIP": 0.0,
+            "LMDIP": 0.0,
+            "LIMP": math.radians(60.5),
+            "LIPIP": 0.0,
+            "LIDIP": 0.0,
+            "RTMP": math.radians(60.5),
+            "RTPIP": 0.0,
+            "RTDIP": 0.0,
+            "RMMP": math.radians(-60.5),
+            "RMPIP": 0.0,
+            "RMDIP": 0.0,
+            "RIMP": math.radians(-60.5),
+            "RIPIP": 0.0,
+            "RIDIP": 0.0,
+        },
+        joint_vel={".*": 0.0},
+    ),
+    soft_joint_pos_limit_factor=0.9,
+    actuators={
+        "legs": ImplicitActuatorCfg(
+            joint_names_expr=[".*CY", ".*CR", ".*CP", ".*KP", ".*AP", ".*AR"],
+            effort_limit=300,
+            velocity_limit=100.0,
+            stiffness={".*": 200.0},
+            damping={".*": 5.0},
+        ),
+        "arms": ImplicitActuatorCfg(
+            joint_names_expr=[".*SC", ".*SP", ".*SR", ".*SY", ".*EP", ".*WR[PYR]"],
+            effort_limit=200,
+            velocity_limit=100.0,
+            stiffness={".*": 40.0},
+            damping={".*": 10.0},
+        ),
+        "fingers": ImplicitActuatorCfg(
+            joint_names_expr=[".*TMP", ".*PIP", ".*DIP", ".*IMP", ".*MMP", ".*MDIP", ".*IPIP", ".*IDIP"],
+            effort_limit=50,
+            velocity_limit=100.0,
+            stiffness={".*": 10.0},
+            damping={".*": 2.0},
+        ),
+        "torso": ImplicitActuatorCfg(
+            joint_names_expr=["WP", "WR", "WY", "HP", "HY"],
+            effort_limit=100,
+            velocity_limit=50.0,
+            stiffness={".*": 20.0},
+            damping={".*": 4.0},
+        ),
+    },
+)
 
+
+G1_CFG = ArticulationCfg(
+    spawn=sim_utils.UsdFileCfg(
+        usd_path=f"{ISAAC_NUCLEUS_DIR}/Robots/Unitree/G1/g1.usd",
+        activate_contact_sensors=True,
+        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            disable_gravity=False,
+            retain_accelerations=False,
+            linear_damping=0.0,
+            angular_damping=0.0,
+            max_linear_velocity=1000.0,
+            max_angular_velocity=1000.0,
+            max_depenetration_velocity=1.0,
+        ),
+        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+            enabled_self_collisions=False, solver_position_iteration_count=8, solver_velocity_iteration_count=4
+        ),
+    ),
+    init_state=ArticulationCfg.InitialStateCfg(
+        pos=(0.0, 0.0, 1.0),
+        joint_pos={
+            ".*_hip_pitch_joint": -0.20,
+            ".*_knee_joint": 0.42,
+            ".*_ankle_pitch_joint": -0.23,
+            ".*_elbow_pitch_joint": 0.87,
+            "left_shoulder_roll_joint": 0.16,
+            "left_shoulder_pitch_joint": 0.35,
+            "right_shoulder_roll_joint": -0.16,
+            "right_shoulder_pitch_joint": 0.35,
+            "left_one_joint": 1.0,
+            "right_one_joint": -1.0,
+            "left_two_joint": 0.52,
+            "right_two_joint": -0.52,
+        },
+        joint_vel={".*": 0.0},
+    ),
+    soft_joint_pos_limit_factor=0.9,
+    actuators={
+        "legs": ImplicitActuatorCfg(
+            joint_names_expr=[
+                ".*_hip_yaw_joint",
+                ".*_hip_roll_joint",
+                ".*_hip_pitch_joint",
+                ".*_knee_joint",
+                "torso_joint",
+            ],
+            effort_limit=300,
+            velocity_limit=100.0,
+            stiffness={
+                ".*_hip_yaw_joint": 150.0,
+                ".*_hip_roll_joint": 150.0,
+                ".*_hip_pitch_joint": 200.0,
+                ".*_knee_joint": 200.0,
+                "torso_joint": 200.0,
+            },
+            damping={
+                ".*_hip_yaw_joint": 5.0,
+                ".*_hip_roll_joint": 5.0,
+                ".*_hip_pitch_joint": 5.0,
+                ".*_knee_joint": 5.0,
+                "torso_joint": 5.0,
+            },
+            armature={
+                ".*_hip_.*": 0.01,
+                ".*_knee_joint": 0.01,
+                "torso_joint": 0.01,
+            },
+        ),
+        "feet": ImplicitActuatorCfg(
+            effort_limit=20,
+            joint_names_expr=[".*_ankle_pitch_joint", ".*_ankle_roll_joint"],
+            stiffness=20.0,
+            damping=2.0,
+            armature=0.01,
+        ),
+        "arms": ImplicitActuatorCfg(
+            joint_names_expr=[
+                ".*_shoulder_pitch_joint",
+                ".*_shoulder_roll_joint",
+                ".*_shoulder_yaw_joint",
+                ".*_elbow_pitch_joint",
+                ".*_elbow_roll_joint",
+                ".*_five_joint",
+                ".*_three_joint",
+                ".*_six_joint",
+                ".*_four_joint",
+                ".*_zero_joint",
+                ".*_one_joint",
+                ".*_two_joint",
+            ],
+            effort_limit=300,
+            velocity_limit=100.0,
+            stiffness=40.0,
+            damping=10.0,
+            armature={
+                ".*_shoulder_.*": 0.01,
+                ".*_elbow_.*": 0.01,
+                ".*_five_joint": 0.001,
+                ".*_three_joint": 0.001,
+                ".*_six_joint": 0.001,
+                ".*_four_joint": 0.001,
+                ".*_zero_joint": 0.001,
+                ".*_one_joint": 0.001,
+                ".*_two_joint": 0.001,
+            },
+        ),
+    },
+)
 class NewRobotsSceneCfg(InteractiveSceneCfg):
     """Designs the scene."""
 
@@ -96,7 +314,8 @@ class NewRobotsSceneCfg(InteractiveSceneCfg):
     # robot
     Jetbot = JETBOT_CONFIG.replace(prim_path="{ENV_REGEX_NS}/Jetbot")
     Dofbot = DOFBOT_CONFIG.replace(prim_path="{ENV_REGEX_NS}/Dofbot")
-
+    HRP5P = HRP5P_CFG.replace(prim_path="{ENV_REGEX_NS}/HRP5P")
+    #G1 = G1_CFG.replace(prim_path="{ENV_REGEX_NS}/G1")
 
 def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     sim_dt = sim.get_physics_dt()
@@ -149,7 +368,6 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
         wave_action = scene["Dofbot"].data.default_joint_pos
         wave_action[:, 0:4] = 0.25 * np.sin(2 * np.pi * 0.5 * sim_time)
         scene["Dofbot"].set_joint_position_target(wave_action)
-
         scene.write_data_to_sim()
         sim.step()
         sim_time += sim_dt

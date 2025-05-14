@@ -38,6 +38,7 @@ def feet_air_time(
     # compute the reward
     first_contact = contact_sensor.compute_first_contact(env.step_dt)[:, sensor_cfg.body_ids]
     last_air_time = contact_sensor.data.last_air_time[:, sensor_cfg.body_ids]
+    
     reward = torch.sum((last_air_time - threshold) * first_contact, dim=1)
     # no reward for zero command
     reward *= torch.norm(env.command_manager.get_command(command_name)[:, :2], dim=1) > 0.1
@@ -75,10 +76,19 @@ def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = Scen
     """
     # Penalize feet sliding
     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+    forces = contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids, :]  # Fx, Fy, Fz
+    contact_mask = forces.norm(dim=-1) > 1.0  # booléen : True si contact (N > seuil)
     contacts = contact_sensor.data.net_forces_w_history[:, :, sensor_cfg.body_ids, :].norm(dim=-1).max(dim=1)[0] > 1.0
     asset = env.scene[asset_cfg.name]
 
     body_vel = asset.data.body_lin_vel_w[:, asset_cfg.body_ids, :2]
+    
+    # env_id = 0
+    # foot_names = ["Lleg_Link5", "Rleg_Link5"]
+    # for i, name in enumerate(sensor_cfg.body_names):
+    #     if name in foot_names:
+    #         print(f"[{name}] vel (m/s):", body_vel[env_id, i])
+    #         print(f"[{name}] contact:", contact_mask[env_id, i])
     reward = torch.sum(body_vel.norm(dim=-1) * contacts, dim=1)
     return reward
 
