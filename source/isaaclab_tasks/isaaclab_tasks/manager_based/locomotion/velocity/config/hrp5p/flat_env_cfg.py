@@ -6,9 +6,10 @@
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.utils import configclass
 
-from .rough_env_cfg import G1RoughEnvCfg
-
-
+from .rough_env_cfg import HRP5RoughEnvCfg
+from isaaclab.terrains.config.rough import ROUGH_TERRAINS_CFG
+from isaaclab.terrains.config.rough_without_stairs import ROUGH_TERRAINS_WS_CFG
+import isaaclab.sim as sim_utils
 @configclass
 class HRP5FlatEnvCfg(HRP5RoughEnvCfg):
     def __post_init__(self):
@@ -27,13 +28,13 @@ class HRP5FlatEnvCfg(HRP5RoughEnvCfg):
         # Rewards
         self.rewards.track_ang_vel_z_exp.weight = 1.0
         self.rewards.lin_vel_z_l2.weight = -0.2
-        self.rewards.action_rate_l2.weight = -0.005
+        self.rewards.action_rate_l2.weight = -0.01
         self.rewards.dof_acc_l2.weight = -1.0e-7
-        self.rewards.feet_air_time.weight = 0.75
+        self.rewards.feet_air_time.weight = 3.0
         self.rewards.feet_air_time.params["threshold"] = 0.4
         self.rewards.dof_torques_l2.weight = -2.0e-6
         self.rewards.dof_torques_l2.params["asset_cfg"] = SceneEntityCfg(
-            "robot", joint_names=[".*_hip_.*", ".*_knee_joint"]
+            "robot", joint_names=["LCY", "LCP", "LKP", "RCY", "RCP", "RKP"]
         )
         # Commands
         self.commands.base_velocity.ranges.lin_vel_x = (0.0, 1.0)

@@ -11,28 +11,33 @@ from isaaclab_assets import HRP5P_CFG  # isort: skip
 class HRP5Rewards(RewardsCfg):
     """Reward terms for the MDP."""
 
-    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-200.0)
+    termination_penalty = RewTerm(func=mdp.is_terminated, weight=-600.0)
     track_lin_vel_xy_exp = RewTerm(
         func=mdp.track_lin_vel_xy_yaw_frame_exp,
-        weight=1.0,
+        weight=2.0,
         params={"command_name": "base_velocity", "std": 0.5},
     )
     track_ang_vel_z_exp = RewTerm(
-        func=mdp.track_ang_vel_z_world_exp, weight=2.0, params={"command_name": "base_velocity", "std": 0.5}
+        func=mdp.track_ang_vel_z_world_exp, weight=1.0, params={"command_name": "base_velocity", "std": 0.5}
     )
     
     feet_air_time = RewTerm(
         func=mdp.feet_air_time_positive_biped,
-        weight=0.75,
+        weight=3.0,
         params={
             "command_name": "base_velocity",
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["Lleg_Link5","Rleg_Link5"]),
             "threshold": 0.4,
         },
     )
+    joint_extension_penalty = RewTerm(
+        func=mdp.joint_pos_limits,
+        weight=-1.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["LKP", "RKP"])}
+    )
     feet_slide = RewTerm(
         func=mdp.feet_slide,
-        weight=-0.1,
+        weight=-0.6,
         params={
             "sensor_cfg": SceneEntityCfg("contact_forces", body_names=["Lleg_Link5","Rleg_Link5"]),
             "asset_cfg": SceneEntityCfg("robot", body_names=["Lleg_Link5","Rleg_Link5"]),
@@ -41,16 +46,21 @@ class HRP5Rewards(RewardsCfg):
     dof_pos_limits = RewTerm(
         func=mdp.joint_pos_limits,
         weight=-1.0,
-        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["LAP", "LAR", "RAP", "RAR"])}
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["LAP", "LAR", "RAP", "RAR","LKP", "RKP","WP", "WR", "WY","LCY", "LCR","LCP", "RCY", "RCR","RCP"])}
     )
     joint_deviation_hip = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.1,
+        weight=-0.4,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["LCY", "LCR", "RCY", "RCR"])}
+    )
+    joint_deviation_hip = RewTerm(
+        func=mdp.joint_deviation_l1,
+        weight=-1.0,
+        params={"asset_cfg": SceneEntityCfg("robot", joint_names=["LCP","RCP"])}
     )
     joint_deviation_arms = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.1,
+        weight=-1.0,
         params={"asset_cfg": SceneEntityCfg(
             "robot",
             joint_names=["LSP", "LSR", "LSY", "LEP", "RSP", "RSR", "RSY", "REP"]
@@ -69,7 +79,7 @@ class HRP5Rewards(RewardsCfg):
     # )
     joint_deviation_torso = RewTerm(
         func=mdp.joint_deviation_l1,
-        weight=-0.1,
+        weight=-1.0,
         params={"asset_cfg": SceneEntityCfg("robot", joint_names=["WP", "WR", "WY"])}
     )
 
@@ -85,7 +95,7 @@ class HRP5RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.events.push_robot = None
         self.events.add_base_mass = None
         self.events.reset_robot_joints.params["position_range"] = (1.0, 1.0)
-        self.events.base_external_force_torque.params["asset_cfg"].body_names = ["Chest_Link2"]
+        self.events.base_external_force_torque.params["asset_cfg"].body_names = ["Chest_Link2", "Chest_Link1", "Chest_Link0"]
         self.events.reset_base.params = {
             "pose_range": {"x": (-0.5, 0.5), "y": (-0.5, 0.5), "yaw": (-3.14, 3.14)},
             "velocity_range": {
@@ -97,7 +107,7 @@ class HRP5RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.rewards.lin_vel_z_l2.weight = 0.0
         self.rewards.undesired_contacts = None
         self.rewards.flat_orientation_l2.weight = -1.0
-        self.rewards.action_rate_l2.weight = -0.005
+        self.rewards.action_rate_l2.weight = -0.01
         self.rewards.dof_acc_l2.weight = -1.25e-7
         self.rewards.dof_acc_l2.params["asset_cfg"] = SceneEntityCfg(
             "robot", joint_names=["LCY", "LCP", "LKP", "LAP", "RCY", "RCP", "RKP", "RAP", "LAR", "RAR"]
@@ -111,10 +121,8 @@ class HRP5RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
         self.commands.base_velocity.ranges.lin_vel_y = (0.0, 0.0)
         self.commands.base_velocity.ranges.ang_vel_z = (-1.0, 1.0)
 
-        self.terminations.base_contact.params["sensor_cfg"].body_names = ["Body","Chest_Link2","Rleg_Link2","Lleg_Link2","Rleg_Link3","Lleg_Link3",
-                                                                          "Larm_Link0","Rarm_Link0","Larm_Link1","Rarm_Link1","Larm_Link2","Rarm_Link2",
-                                                                          "Larm_Link3","Rarm_Link3","Larm_Link4","Rarm_Link4","Larm_Link6","Rarm_Link6",
-                                                                          "Lhand_Link0_Plan2","Rhand_Link0_Plan2"]
+        self.terminations.base_contact.params["sensor_cfg"].body_names = ["Body","Chest_Link2","Rleg_Link2","Lleg_Link2","Larm_Link0","Rarm_Link0",
+                                                                          "Larm_Link1","Rarm_Link1","Larm_Link2","Rarm_Link2","Larm_Link3","Rarm_Link3"]
         
 """                 # -- Observations: disable fingers (not necesarry)
         self.observations.policy.enable_dof_pos_vel = True
